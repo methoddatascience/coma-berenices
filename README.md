@@ -10,4 +10,4 @@ The [Coma Berencies](https://ttpinsights.com/) is a three man team that consists
 
 Here, you'll find code to our projects and kaggle competitions that we participated in throughout the course.
 
-To learn more about us, visit [TTP Insights](https://ttpinsights.com/)
+To learn more about us, visit [TTP Insights](https://ttpinsights.com/).
