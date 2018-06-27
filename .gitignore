@@ -108,3 +108,6 @@ venv.bak/
 
 # HomeCreditDefault/data
 HomeCreditDefault/data
+
+# ignore data dir in PhotoPharmics
+PhotoPharmics/data
