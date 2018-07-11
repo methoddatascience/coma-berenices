@@ -1,194 +1,180 @@
-
-from selenium import webdriver
-from bs4 import BeautifulSoup
+# scrape dependencies
 import requests
 import re
-import random
-from pymongo import MongoClient
+from bs4 import BeautifulSoup as bs
+
+# data analysis dependencies
 import pandas as pd
-import multiprocessing as mp
+import numpy as np
+import csv
 
-UserAgent = [
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
-        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:55.0) Gecko/20100101 Firefox/55.0",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
-        "Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6",
-        "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.6 (KHTML, like Gecko) Chrome/20.0.1090.0 Safari/536.6",
-        "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/19.77.34.5 Safari/537.1",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5",
-        "Mozilla/5.0 (Windows NT 6.0) AppleWebKit/536.5 (KHTML, like Gecko) Chrome/19.0.1084.36 Safari/536.5",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
-        "Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 (KHTML, like Gecko) Chrome/19.0.1061.0 Safari/536.3",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24",
-        "Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 (KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24"
-        ]
+import datetime as dt
+import time
 
+# set the url to scrape
+url = 'https://www.ncbi.nlm.nih.gov/pubmed/?term=parkinsons+disease'
 
-def singlePageExtract(url):
-    # Get author's organization and paper keywords
-    org = ''
+# set up beautiful soup to scrape
+response = requests.get(url)
+soup = bs(response.text, 'html.parser')
+
+# lets scrape the article titles
+journals = soup.find_all("p", attrs={'class':'title'})
+
+# searching for the journal titles
+journals_len = len(journals)
+print(f"There are {journals_len} journals to scrape on the first page.")
+
+# loop through journals to print titles
+for i in range(0,20):
+    journals[i].text.strip()
+
+# set the main url that we will concatanate with the pubmed id
+main_url = 'https://www.ncbi.nlm.nih.gov/pubmed/'
+print(main_url)
+
+# set empty links_all list to append to 
+links_all = []
+
+# set pubmed ids list to append to
+pubmed_ids = []
+
+# set empty list to append scrape_links to
+scrape_links = []
+
+# function to get links
+def get_links(main_url):
     
-    print(url)
-    # Set waiting time to avoid high traffic
-    browser.implicitly_wait(random.randint(2, 3))
+    # use bs to scarpe p tags with class - title
+    links = soup.find_all("p",attrs={'class':'title'})
+      
+    # testing to see how my links / journals to scrape
+    articles_to_scrape = len(links)
+    print(f"There are {articles_to_scrape} articles to scrape.")
+    print("----------------------------------------------")
     
-    # Get target page information
-    tempo_html = requests.get(url,  headers = requestHeader(url))
-    tempo_soup = BeautifulSoup(tempo_html.text, 'lxml')
+    # loop through links to convert to string
+    for i in range (len(links)):
+        links_all.append(str(links[i]))
+        print(links[i])
+        print("----------------------------------------------")
+        
+    # slice through links_all to test
+    len(links_all)
+    links_all[1]
     
-    # Find and collect authors' organization
-    try:
-        collect = tempo_soup.find('dl', {'class':'ui-ncbi-toggler-slave'}).find_all('dd')
-        for single in collect:
-            org += ';' + single.get_text()
-    except:
-        org = 'ORGANIZATION_NA'
+    # loop through links all and use regex to grab the id numbers
+    for i in range (len(links_all)):
+        pubmed_ids.append(re.findall(r'\d{8}',links_all[i]))
     
-    # Collect article' keywords
-    try:
-        keywords = tempo_soup.find('div', {'class':'keywords'}).find('p').get_text().split(';')
-    except:
-        keywords = 'KEYWORDS_NA'
+    # print out info for pubmed_ids
+    len(pubmed_ids)
+    type(pubmed_ids)
+    print(pubmed_ids)
+    print("----------------------------------------------")
     
-    return org, keywords
-
-def requestHeader(url):
-    # Build request headers
-    headers = {
-            'User-Agent':random.choice(UserAgent),
-            'Referer': url,
-            'Connection':'keep-alive',
-            'Host':'www.ncbi.nlm.nih.gov'
-            }
-    return headers
-
+    # use itertools to transform pubmed ids from an array withn an array into one list
+    import itertools
+    pubmed_merged = list(itertools.chain.from_iterable(pubmed_ids))
     
-def getMaxPageNum(searchWord):
-    # Build search link
-    url = 'https://www.ncbi.nlm.nih.gov/pubmed/?term=' + searchWord
+    # slice through pubmed_merged to see what itertools did
+    pubmed_merged[0]
     
-    browser.get(url)
-    browser.implicitly_wait(1)
+    # concat main_url with a slice of pubmed_merged before we loop
+    print(main_url + str(pubmed_merged[0]))
     
-    # Get maximum page number from returned research result
-    soup = BeautifulSoup(browser.page_source, "lxml")
-    max_num = int(soup.find('input', {'id':'pageno2'}).get('last'))
-    return max_num
+    # append merged links to links_all
+    for i in range (len(pubmed_merged)):
+        scrape_links.append(main_url + str(pubmed_merged[i]))
+
+# RUN FUNCTION
+get_links(main_url)
+
+# delete duplicates in scrape_links and assign to new variable scrape_links_final
+scrape_links_final = list(set(scrape_links))
+len(scrape_links_final)
+
+# testing scrape_links
+for i in scrape_links_final:
+    print(i)
+
+# slice out scrape_links_final so we can scrape 5 articles at a time
+links_1 = scrape_links_final[0:5]
+print(links_1)
+
+links_2 = scrape_links_final[5:10]
+print(links_2)
+
+links_3 = scrape_links_final[10:15]
+print(links_3)
+
+links_4 = scrape_links_final[15:20]
+print(inks_4)
+
+# SELENIUM - Web browser automation
+from splinter import Browser
+from selenium import webdriver
+
+# make sure chrome browser exe is in current directory
+# chrome browser exe is not necessary for MACS
+executable_path = {'executable_path': 'chromedriver'}
+
+# create dict to append data to
+article_dict = {"title": [],
+               "abstract": []}
+
+# create get article info function
+abstract = []
+
+def get_article_info(links_1):
     
-
-def multiCore(url_list):
-    # Multiprocessing
-    p = mp.Pool()
-
-    for url in url_list:
-        p.apply_async(extractWrite, args=(url,))
-
-    # Close pool
-    p.close()
-    p.join()
-
-
-def extractWrite(url):
-    # Extract information and write into MongoDB
-    org, keywords = singlePageExtract(url)
-    # Extract title, author, date and other information
-    title = row.find('a').get_text()
-    author = row.find('p', {'class':'desc'}).get_text()
-    journal = row.find('span', {'class':'jrnl'}).get('title')
-    date_raw = row.find('p', {'class':'details'}).get_text()
-    # Use regular expression to get time information
-    date = re.findall(r'\d{4}[\s\w{3}\s\d+]*', date_raw)[0]
-
-    # Build data to be loaded into MongoDB
-    data = {
-    'url': link,
-    'title': title,
-    'author': author,
-    'journal': journal,
-    'date': date,
-    'org': org,
-    'keywords': keywords
-    }
-
-    # Check if already existed
-    if db.med_nlp.find({'url': link}).limit(1):
-    	print(data, 'already exists.')
-    else:
-        # Insert data into MongoDB's Pubmed database's med_nlp collections
-        db.med_nlp.insertOne(data)  
-
-
-def informationExtraction():
-    # Extract and build data 
-    # Parse html information
-    soup = BeautifulSoup(browser.page_source, "lxml")
-    # Find sections with desired information
-    all_div = soup.find_all('div', {'class':'rslt'})
-
-    # Create/empty url_list to store all the new urls
-    url_list = []
+    # iterate through articles
+    for i in links_1:
+        
+        # sets up scraper
+        browser = Browser('chrome', headless=False)
+        html = browser.html
+        response2 = requests.get(i)
+        soup2 = bs(response2.text, 'html.parser')
     
-    # Iterate to extract information like author, title, journal, etc
-    for row in all_div:
-        # Build article's individual link
-        link = default_link + row.find('a').get('href')
-        url_list.append(link)
+        browser.visit(i)
     
-    # Operate multiprocessing
-    multiCore(url_list)
+        # there are two 'h1' tags on this page. slice out index 0
+        title_one = soup2.find_all('h1')
+        article_one_title = title_one[1].text.strip()
+    
+        # slice h1 at index 1 to grab article title
+        title.append(article_one_title)
+    
+        # get abstract
+        abstract.append(soup2.find("div", attrs={'class': 'rprt_all'}).text.strip()) 
 
-    browser.implicitly_wait(1)
+### RUN ARTICLE INFO FUNCTION ###
 
-    # Click next buttion to navigate to the next page
-    browser.find_element_by_xpath('//*[@title="Next page of results"]').click()
+get_article_info(links_1)
+#get_article_info(links_2)
+#get_article_info(links_3)
+#get_article_info(links_4)
 
+for i in title:
+    print(i + "\n")
 
-if __name__ == "__main__":
-    # Website to scrape
-    default_link = 'https://www.ncbi.nlm.nih.gov'
+len(title)
 
-    # Start web browser
-    # browser = webdriver.Chrome('/home/katon/Desktop/chromedriver')
-    browser = webdriver.Chrome
+for i in abstract:
+    print(i)
+    print("\n")
 
-    # Start MongoDB
-    MONGO_HOST= 'mongodb://localhost:27017/'
-    client = MongoClient(MONGO_HOST)
+len(abstract)
 
-    # Create or load Pubmed database
-    db = client.Pubmed
+# Add title and abstract to article_dict
+article_dict["title"].append(title)
+article_dict["abstract"].append(abstract)
+print(article_dict)
 
-    # Get input
-    searchKeyWords = input("Please input your search key words/phrases!")
-
-    # By default
-    # searchKeyWords = 'natural language processing clinical'
-
-    # Get max page number
-    max_number = getMaxPageNum(searchKeyWords)
-
-    count = 1
-
-    while count < max_number:
-        print(count)
-        informationExtraction()
-        count += 1
-
-    print("finish")
-
-## Access MongdoDB to analyze data   
-#conn = MongoClient(host='localhost',port=27017)
-#pub = conn['Pubmed']
-#nlp = pub['med_nlp']
-#
-#data = pd.DataFrame(list(nlp.find()))
-#print(data)
+# Save article_dict to json
+import json
+json = json.dumps(article_dict)
+f = open("data/parkinsons_2.json","w")
+f.write(json)
+f.close()
