@@ -147,7 +147,8 @@ def get_article_info(links_1):
         title.append(article_one_title)
     
         # get abstract
-        abstract.append(soup2.find("div", attrs={'class': 'rprt_all'}).text.strip()) 
+        # abstract.append(soup2.find("div", attrs={'class': 'rprt_all'}).text.strip()) 
+        abstract.append(soup2.find("div", attrs={'class': 'rprt abstract'}).text.strip())
 
 ### RUN ARTICLE INFO FUNCTION ###
 
