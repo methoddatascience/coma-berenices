@@ -109,7 +109,7 @@ links_3 = scrape_links_final[10:15]
 print(links_3)
 
 links_4 = scrape_links_final[15:20]
-print(inks_4)
+print(links_4)
 
 # SELENIUM - Web browser automation
 from splinter import Browser
@@ -124,6 +124,7 @@ article_dict = {"title": [],
                "abstract": []}
 
 # create get article info function
+title = []
 abstract = []
 
 def get_article_info(links_1):
@@ -138,21 +139,21 @@ def get_article_info(links_1):
         soup2 = bs(response2.text, 'html.parser')
     
         browser.visit(i)
-    
+        
         # there are two 'h1' tags on this page. slice out index 0
         title_one = soup2.find_all('h1')
         article_one_title = title_one[1].text.strip()
     
         # slice h1 at index 1 to grab article title
         title.append(article_one_title)
-    
+        
         # get abstract
         # abstract.append(soup2.find("div", attrs={'class': 'rprt_all'}).text.strip()) 
         abstract.append(soup2.find("div", attrs={'class': 'rprt abstract'}).text.strip())
 
 ### RUN ARTICLE INFO FUNCTION ###
 
-get_article_info(links_1)
+    get_article_info(links_1)
 #get_article_info(links_2)
 #get_article_info(links_3)
 #get_article_info(links_4)
